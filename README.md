@@ -1,231 +1,142 @@
-[Bandcamp Scraper](https://apify.com/cryptosignals/bandcamp-scraper?fpr=data)
+[Bandcamp Scraper](https://apify.com/lulzasaur/bandcamp-scraper?fpr=data)
 
-# Bandcamp Scraper
-
-Scrape [Bandcamp](https://bandcamp.com) — the leading platform for independent music — for search results, album details with full tracklists, and artist profiles with complete discographies. No authentication required.
-
-## What is Bandcamp?
-
-Bandcamp is a music platform where independent artists sell directly to fans. It hosts millions of albums and tracks across every genre imaginable, from jazz and electronic to punk and ambient. Artists set their own prices (including "name your price" / free), making it a goldmine for music market research and pricing analysis.
+Scrape Bandcamp, the world's largest independent music platform. Search for albums, tracks, and artists by name or genre. Extract prices, full tracklists, release dates, tags, descriptions, and cover art.
 
 ## Features
 
-### Search
+- **Search by anything** -- artist names, album titles, genres, labels, or keywords
+- **4 search types** -- Albums, Tracks, Bands/Artists, or All types
+- **Multiple queries** -- Run several searches in a single scrape
+- **Full album details** -- Optional deep fetch for tracklists, durations, pricing, descriptions
+- **Paginated results** -- Automatically follows search pagination for large result sets
+- **Structured data** -- Extracts embedded JSON from `data-tralbum` attributes for maximum accuracy
 
-Search Bandcamp's catalog by any query — genre, artist name, album title, mood, or keyword. Returns structured results with type classification (album, track, artist).
+## Input
 
-### Album Details
-
-Get complete album information from any Bandcamp album URL: tracklist with durations, pricing, tags, release date, and cover art.
-
-### Artist Info
-
-Get artist profiles with bio, location, full discography listing, and genre tags from any Bandcamp artist URL.
-
-## Input Schema
-
-```
-{
-    "action": "search",
-    "query": "jazz",
-    "maxItems": 20
-}
-```
-
-### Parameters
-
-| Parameter | Type | Required | Description |
+| Field | Type | Default | Description |
 | --- | --- | --- | --- |
-| `action` | string | Yes | `search`, `album`, or `artist` |
-| `query` | string | For search | Search query text |
-| `url` | string | For album/artist | Bandcamp URL to scrape |
-| `maxItems` | integer | No | Max search results (default: 20, max: 200) |
+| `searchQueries` | string[] | *required* | Artist names, album titles, or genres to search |
+| `maxListings` | integer | `100` | Maximum total results across all queries (1-5000) |
+| `searchType` | select | `album` | Search type: `album`, `track`, `band`, or `all` |
+| `scrapeDetails` | boolean | `false` | Fetch each album/track page for full tracklist and details |
+| `proxyConfiguration` | object |  | Optional proxy configuration |
 
-## Output Examples
+## Output
 
-### Search Results
-
-```
-{
-    "title": "Oncle Jazz",
-    "artist": "Men I Trust",
-    "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
-    "type": "album",
-    "genre": "electronic",
-    "releaseDate": "September 13, 2019",
-    "thumbnail": "https://f4.bcbits.com/img/a3970465110_7.jpg"
-}
-```
-
-### Album Details
+Each result contains:
 
 ```
 {
-    "title": "Oncle Jazz",
-    "artist": "Men I Trust",
-    "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
-    "tracks": [
-        {
-            "position": 1,
-            "title": "Oncle Jazz",
-            "url": "https://menitrust.bandcamp.com/track/oncle-jazz",
-            "duration": 63.2
-        }
-    ],
-    "trackCount": 24,
-    "tags": ["electronic", "indie", "dream pop", "Montreal"],
-    "releaseDate": "13 Sep 2019 00:00:00 GMT",
-    "price": 0.0,
-    "currency": "USD",
-    "thumbnail": "https://f4.bcbits.com/img/a3970465110_10.jpg",
-    "description": "24 track album"
+  "title": "OK Computer",
+  "artist": "Radiohead",
+  "artistUrl": "https://radiohead.bandcamp.com",
+  "albumUrl": "https://radiohead.bandcamp.com/album/ok-computer",
+  "genre": "rock",
+  "tags": ["rock", "alternative", "electronic"],
+  "releaseDate": "16 Jun 1997 00:00:00 GMT",
+  "price": 9.99,
+  "currency": "USD",
+  "format": "digital",
+  "trackCount": 12,
+  "imageUrl": "https://f4.bcbits.com/img/a1234567890_10.jpg",
+  "description": "Album description...",
+  "itemType": "album",
+  "url": "https://radiohead.bandcamp.com/album/ok-computer",
+  "searchQuery": "radiohead",
+  "scrapedAt": "2026-04-25T12:00:00.000Z"
 }
 ```
 
-### Artist Info
+With `scrapeDetails: true`, a `tracks` array is included:
 
 ```
 {
-    "name": "Men I Trust",
-    "url": "https://menitrust.bandcamp.com",
-    "location": "Montreal, Quebec",
-    "bio": "Men I Trust is a Canadian band...",
-    "thumbnail": "https://f4.bcbits.com/img/...",
-    "albums": [
-        {
-            "title": "Oncle Jazz",
-            "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
-            "thumbnail": "https://f4.bcbits.com/img/a3970465110_7.jpg"
-        }
-    ],
-    "albumCount": 6,
-    "tags": ["electronic", "indie"]
+  "tracks": [
+    {
+      "trackNumber": 1,
+      "title": "Airbag",
+      "duration": 281,
+      "durationFormatted": "4:41"
+    },
+    {
+      "trackNumber": 2,
+      "title": "Paranoid Android",
+      "duration": 383,
+      "durationFormatted": "6:23"
+    }
+  ],
+  "trackCount": 12
 }
 ```
 
-## Use Cases
+## Example Inputs
 
-### Music Market Research
-
-Analyze pricing trends across genres. Bandcamp artists set their own prices, making it ideal for studying indie music economics. Track how many albums are free vs. paid, average price points by genre, and pricing strategies for successful artists.
+### Search for a specific artist's albums
 
 ```
-{"action": "search", "query": "synthwave", "maxItems": 100}
+{
+  "searchQueries": ["radiohead"],
+  "searchType": "album",
+  "maxListings": 20
+}
 ```
 
-Collect 100 synthwave albums, then analyze the price distribution. Compare against other genres to find pricing sweet spots.
-
-### Playlist Curation and Music Discovery
-
-Build curated playlists by searching for specific moods, genres, or subgenres. Bandcamp's tagging system is community-driven, so you can find extremely niche music.
+### Search multiple artists with full details
 
 ```
-{"action": "search", "query": "lo-fi ambient", "maxItems": 50}
+{
+  "searchQueries": ["tame impala", "king gizzard", "black midi"],
+  "searchType": "album",
+  "scrapeDetails": true,
+  "maxListings": 50
+}
 ```
 
-Use search results to discover artists, then drill into each with the `artist` action to explore their full catalogs.
-
-### Artist Discovery and A&R
-
-Labels and A&R professionals can use this to discover emerging artists. Search for trending genres, then analyze artist discographies and release patterns.
+### Search for tracks by genre keyword
 
 ```
-{"action": "artist", "url": "https://artist.bandcamp.com"}
+{
+  "searchQueries": ["shoegaze", "dream pop", "post-punk"],
+  "searchType": "track",
+  "maxListings": 200
+}
 ```
 
-Get complete discography, location (for booking/touring logistics), bio, and genre tags. Cross-reference multiple artists to find scenes and clusters.
-
-### Indie Music Pricing Analysis
-
-Study how independent musicians price their work. Bandcamp's "name your price" model creates a unique dataset:
-
-1. Search for a genre: `{"action": "search", "query": "jazz", "maxItems": 200}`
-2. Get album details for each result to see actual prices
-3. Analyze: What percentage is free? What's the median price? Do established artists charge more?
-
-### Genre and Tag Analysis
-
-Map the Bandcamp genre ecosystem. Artists self-tag their work, creating a folksonomy of music classification:
-
-1. Search across genres to collect tag data
-2. Use album details to get full tag lists
-3. Build a tag co-occurrence graph to understand genre relationships
-
-### Release Pattern Tracking
-
-Monitor new releases in specific genres or from specific artists. Combine search (for genre-level monitoring) with artist scraping (for per-artist tracking) to build a release calendar.
-
-### Music Data Enrichment
-
-Enrich your existing music database with Bandcamp data. If you have a list of artist names or album titles, use search to find their Bandcamp presence, then get full details.
-
-### Academic Research
-
-Study the independent music ecosystem: geographical distribution of artists, genre evolution over time, pricing dynamics, and the relationship between tags and commercial success.
-
-## Pricing
-
-This actor uses pay-per-event pricing:
-
-- **search-result**: Charged per search result returned
-- **album-detail**: Charged per album scraped
-- **artist-detail**: Charged per artist profile scraped
-
-## Technical Details
-
-- Uses `httpx` for async HTTP requests with connection pooling
-- Parses JSON-LD structured data from album pages for maximum accuracy
-- Falls back to HTML parsing via BeautifulSoup4 when structured data is unavailable
-- Extracts `data-tralbum` and `data-band` embedded JSON from Bandcamp pages
-- No authentication required — all data is from public pages
-- Respects Bandcamp's server with sequential requests
-- Handles pagination for search results automatically
-
-## Limitations
-
-- Only accesses publicly available information on Bandcamp
-- Search results are limited to what Bandcamp's search returns (no API access)
-- Rate limiting may apply for very large scrapes — use reasonable `maxItems` values
-- Prices shown are the minimum/listed price; "name your price" items show 0.00
-
-## FAQ
-
-**Q: Does this require a Bandcamp account?**
-A: No. All data is scraped from public HTML pages.
-
-**Q: How fast is it?**
-A: Search returns around 20 results per page load. Album and artist details take one request each. Typical runs complete in seconds.
-
-**Q: Can I search by genre/tag?**
-A: Yes — just use genre names as your search query. Bandcamp's search covers titles, artist names, tags, and descriptions.
-
-**Q: What about "name your price" albums?**
-A: These show as price 0.0 with a minPrice of 0.0 in the album details.
-
-**Q: Can I get streaming URLs?**
-A: The scraper focuses on metadata (titles, prices, tags). Streaming URLs are temporary and expire quickly.
-
-## Getting Started
-
-Install dependencies and run locally:
+### Search for bands/labels
 
 ```
-cd bandcamp-scraper
-pip install -r requirements.txt
-apify run --input '{"action": "search", "query": "jazz", "maxItems": 5}'
+{
+  "searchQueries": ["sub pop", "merge records"],
+  "searchType": "band",
+  "maxListings": 30
+}
 ```
 
-Or deploy to Apify:
+### Search all content types
 
 ```
-apify login
-apify push
+{
+  "searchQueries": ["ambient electronic"],
+  "searchType": "all",
+  "scrapeDetails": true,
+  "maxListings": 100
+}
 ```
 
-## License
+## How It Works
 
-This project is licensed under the Apache License 2.0.
+1. Sends search queries to `bandcamp.com/search` with the specified `item_type` filter
+2. Parses SSR HTML search results (`.searchresult` elements) for basic album/track/artist data
+3. Automatically follows pagination links to get more results
+4. If `scrapeDetails` is enabled, visits each album/track page and extracts the embedded `data-tralbum` JSON for full tracklists, precise pricing, release dates, descriptions, and tags
+5. Results are pushed to the dataset with PPE charging
 
-## Using proxies
+## Data Sources
 
-Bandcamp uses Cloudflare protection that detects and blocks automated traffic patterns from datacenter IPs, returning 403 or challenge pages during bulk scraping. Residential proxies route requests through real ISP addresses that pass Cloudflare's trust checks. [ThorData](https://thordata.partnerstack.com/partner/0a0x4nzh) provides 200M+ residential IPs for reliable Bandcamp data collection at scale.
+- **Search results**: Server-side rendered HTML with `.searchresult` items
+- **Album/track pages**: `data-tralbum` attribute containing complete album data as JSON
+- **Fallbacks**: Meta tags (`og:description`, `datePublished`), inline `TralbumData` script, CSS selectors
+
+## Cost
+
+This actor uses pay-per-event pricing at **$0.005 per result**. A typical run of 100 albums costs approximately $0.50. With `scrapeDetails` enabled, runs take longer but cost the same per result.
