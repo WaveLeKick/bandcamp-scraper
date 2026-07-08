@@ -1,203 +1,231 @@
-[Bandcamp Scraper](https://apify.com/marielise.dev/bandcamp-scraper?fpr=data)
+[Bandcamp Scraper](https://apify.com/cryptosignals/bandcamp-scraper?fpr=data)
 
-Bandcamp Music Scraper is an Apify Actor that extracts comprehensive music data from any Bandcamp artist or label page. It scrapes album metadata, track listings, audio preview URLs, artist profiles, pricing information, and embedded videos. The scraper supports both standard Bandcamp subdomains (e.g., `https://artist.bandcamp.com/`) and custom domain Bandcamp sites. Built with Crawlee and Playwright for reliable browser-based extraction with automatic retries and error recovery.
+# Bandcamp Scraper
+
+Scrape [Bandcamp](https://bandcamp.com) — the leading platform for independent music — for search results, album details with full tracklists, and artist profiles with complete discographies. No authentication required.
+
+## What is Bandcamp?
+
+Bandcamp is a music platform where independent artists sell directly to fans. It hosts millions of albums and tracks across every genre imaginable, from jazz and electronic to punk and ambient. Artists set their own prices (including "name your price" / free), making it a goldmine for music market research and pricing analysis.
 
 ## Features
 
-- **Album metadata** -- title, artist name, artwork URL, release date, genre tags, pricing, and download availability
-- **Track listings** -- individual track title, duration in seconds, track number, and direct track page URL
-- **Audio preview URLs** -- MP3 128kbps streaming preview URLs from Bandcamp's CDN for each track
-- **Artist/label profiles** -- biography, geographic location, profile image, genre tags, and social media links (website, Facebook, Instagram, Twitter/X, YouTube)
-- **Embedded videos** -- YouTube, Vimeo, and Bandcamp video URLs found on album pages
-- **Custom domain support** -- works with Bandcamp sites using custom domains, not just `*.bandcamp.com`
-- **Configurable depth** -- choose exactly which data to extract to optimize run time and cost
-- **Automatic retries** -- built on Crawlee with 3 automatic retries per request for reliability
-- **Proxy support** -- optional Apify Proxy integration for bypassing rate limits
+### Search
 
-## What Data Can You Extract?
+Search Bandcamp's catalog by any query — genre, artist name, album title, mood, or keyword. Returns structured results with type classification (album, track, artist).
 
-### Album Data
+### Album Details
 
-| Field | Type | Description |
-| --- | --- | --- |
-| title | string | Album title |
-| artist | string | Artist or label name |
-| url | string | Album page URL on Bandcamp |
-| imageUrl | string | Album artwork image URL |
-| releaseDate | string | Release or publish date |
-| price | object | Price with `amount` (number) and `currency` (string) |
-| downloadAvailable | boolean | Whether the album offers free or name-your-price download |
-| tags | array | Genre and style tags |
-| tracks | array | Track listing (when Fetch Track Listings is enabled) |
-| videos | array | Embedded video URLs (when Fetch Embedded Videos is enabled) |
+Get complete album information from any Bandcamp album URL: tracklist with durations, pricing, tags, release date, and cover art.
 
-### Track Data
+### Artist Info
 
-| Field | Type | Description |
-| --- | --- | --- |
-| title | string | Track title |
-| duration | number | Duration in seconds |
-| trackNumber | number | Position in the album |
-| url | string | Track page URL |
-| previewUrl | string | MP3 128kbps stream URL (when Fetch Audio Previews is enabled) |
+Get artist profiles with bio, location, full discography listing, and genre tags from any Bandcamp artist URL.
 
-### Artist/Label Data
-
-| Field | Type | Description |
-| --- | --- | --- |
-| name | string | Artist or label display name |
-| bio | string | Biography text |
-| location | string | Geographic location |
-| imageUrl | string | Profile image URL |
-| tags | array | Associated genre tags |
-| socialLinks | object | Website, Facebook, Instagram, Twitter/X, YouTube URLs |
-
-## How to Use
-
-1. Open the Bandcamp Music Scraper on Apify Store
-2. Enter the Bandcamp artist or label URL (e.g., `https://wardruna.bandcamp.com/`)
-3. Select which data you want to extract using the checkboxes
-4. Click **Start** to run the scraper
-5. Download your results in JSON, CSV, Excel, or other formats from the Dataset tab
-
-### Input Parameters
-
-| Parameter | Type | Default | Description |
-| --- | --- | --- | --- |
-| url | string | (required) | Bandcamp artist or label URL |
-| fetchAlbums | boolean | true | Extract album metadata from the /music page |
-| fetchTracks | boolean | false | Extract track listings from each album (requires fetchAlbums) |
-| fetchAudioPreviews | boolean | false | Extract MP3 preview URLs for each track (requires fetchTracks) |
-| fetchArtistInfo | boolean | false | Extract artist/label profile information |
-| fetchVideos | boolean | false | Extract embedded videos from album pages |
-| maxAlbums | integer | 50 | Maximum number of albums to process (0 = unlimited) |
-| proxyConfiguration | object | none | Optional Apify Proxy configuration |
-
-### Example Input
+## Input Schema
 
 ```
 {
-    "url": "https://wardruna.bandcamp.com/",
-    "fetchAlbums": true,
-    "fetchTracks": true,
-    "fetchArtistInfo": true,
-    "maxAlbums": 10
+    "action": "search",
+    "query": "jazz",
+    "maxItems": 20
 }
 ```
 
-## Output Example
+### Parameters
 
-Each album is saved as a separate dataset record for easy filtering and export. Here is an example of a single album record:
+| Parameter | Type | Required | Description |
+| --- | --- | --- | --- |
+| `action` | string | Yes | `search`, `album`, or `artist` |
+| `query` | string | For search | Search query text |
+| `url` | string | For album/artist | Bandcamp URL to scrape |
+| `maxItems` | integer | No | Max search results (default: 20, max: 200) |
+
+## Output Examples
+
+### Search Results
 
 ```
 {
-    "dataType": "album",
-    "title": "Kvitravn",
-    "artist": "Wardruna",
-    "url": "https://wardruna.bandcamp.com/album/kvitravn",
-    "imageUrl": "https://f4.bcbits.com/img/a3832456789_10.jpg",
-    "releaseDate": "22 Jan 2021 00:00:00 GMT",
-    "price": {
-        "amount": 10.0,
-        "currency": "USD"
-    },
-    "downloadAvailable": false,
-    "tags": ["nordic folk", "viking", "norse", "norway"],
+    "title": "Oncle Jazz",
+    "artist": "Men I Trust",
+    "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
+    "type": "album",
+    "genre": "electronic",
+    "releaseDate": "September 13, 2019",
+    "thumbnail": "https://f4.bcbits.com/img/a3970465110_7.jpg"
+}
+```
+
+### Album Details
+
+```
+{
+    "title": "Oncle Jazz",
+    "artist": "Men I Trust",
+    "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
     "tracks": [
         {
-            "title": "Synkverving",
-            "duration": 320.5,
-            "trackNumber": 1,
-            "url": "https://wardruna.bandcamp.com/track/synkverving",
-            "previewUrl": "https://t4.bcbits.com/stream/abc123/mp3-128/1234567890"
+            "position": 1,
+            "title": "Oncle Jazz",
+            "url": "https://menitrust.bandcamp.com/track/oncle-jazz",
+            "duration": 63.2
         }
     ],
-    "videos": []
+    "trackCount": 24,
+    "tags": ["electronic", "indie", "dream pop", "Montreal"],
+    "releaseDate": "13 Sep 2019 00:00:00 GMT",
+    "price": 0.0,
+    "currency": "USD",
+    "thumbnail": "https://f4.bcbits.com/img/a3970465110_10.jpg",
+    "description": "24 track album"
 }
 ```
 
-When artist info is enabled, a separate artist record is also included:
+### Artist Info
 
 ```
 {
-    "dataType": "artist",
-    "name": "Wardruna",
-    "bio": "Wardruna is a Norwegian musical group founded by Einar Selvik...",
-    "location": "Bergen, Norway",
-    "imageUrl": "https://f4.bcbits.com/img/0012345678_10.jpg",
-    "tags": ["nordic folk", "ambient", "viking"],
-    "socialLinks": {
-        "website": "https://wardruna.com",
-        "facebook": "https://facebook.com/wardruna",
-        "instagram": "https://instagram.com/wardruna_official",
-        "twitter": null,
-        "youtube": "https://youtube.com/wardruna"
-    }
+    "name": "Men I Trust",
+    "url": "https://menitrust.bandcamp.com",
+    "location": "Montreal, Quebec",
+    "bio": "Men I Trust is a Canadian band...",
+    "thumbnail": "https://f4.bcbits.com/img/...",
+    "albums": [
+        {
+            "title": "Oncle Jazz",
+            "url": "https://menitrust.bandcamp.com/album/oncle-jazz",
+            "thumbnail": "https://f4.bcbits.com/img/a3970465110_7.jpg"
+        }
+    ],
+    "albumCount": 6,
+    "tags": ["electronic", "indie"]
 }
 ```
-
-## Pricing
-
-This Actor uses **Pay Per Event** pricing. You are charged only for the data you extract:
-
-| Event | Price |
-| --- | --- |
-| Album scraped | $0.01 per album |
-| Artist profile scraped | $0.005 per profile |
-
-**Example costs:**
-
-- Scraping 10 albums from one artist: ~$0.10
-- Scraping 50 albums with artist info: ~$0.505
-- Basic album list (no tracks) for 20 albums: ~$0.20
-
-There are no monthly fees. You pay only for what you use, and platform compute costs are included in the per-event price.
 
 ## Use Cases
 
-- **Music cataloging** -- Build a database of an artist's full discography with metadata, pricing, and artwork
-- **Price monitoring** -- Track album pricing changes over time for music marketplaces or comparison tools
-- **Music discovery** -- Collect genre tags and related artist data for music recommendation engines
-- **Playlist generation** -- Extract track listings and audio preview URLs to create sample playlists
-- **Data journalism** -- Analyze pricing trends, release patterns, and genre distributions across Bandcamp artists
-- **Label analysis** -- Scrape all releases from a record label to understand their catalog and pricing strategy
-- **Social media research** -- Collect artist social links and bios for artist outreach or marketing campaigns
+### Music Market Research
 
-## How It Works
+Analyze pricing trends across genres. Bandcamp artists set their own prices, making it ideal for studying indie music economics. Track how many albums are free vs. paid, average price points by genre, and pricing strategies for successful artists.
 
-1. **Home page validation** -- The Actor navigates to the provided URL and verifies it is a valid Bandcamp artist or label page
-2. **Artist info extraction** -- If enabled, extracts profile data from the page sidebar (name, bio, location, social links, tags)
-3. **Album discovery** -- Navigates to the `/music` page and discovers all album URLs from the music grid
-4. **Album processing** -- For each album (up to the maxAlbums limit), visits the album page and extracts metadata from the embedded `TralbumData` JavaScript object, which contains reliable structured data directly from Bandcamp's backend
-5. **Track extraction** -- Parses track information including title, duration, track number, and MP3 preview stream URLs
-6. **Video extraction** -- Scans for embedded iframe elements from YouTube, Vimeo, and Bandcamp's own video player
-7. **Dataset output** -- Each album and the artist profile are pushed as separate records to the Apify Dataset for easy export
+```
+{"action": "search", "query": "synthwave", "maxItems": 100}
+```
+
+Collect 100 synthwave albums, then analyze the price distribution. Compare against other genres to find pricing sweet spots.
+
+### Playlist Curation and Music Discovery
+
+Build curated playlists by searching for specific moods, genres, or subgenres. Bandcamp's tagging system is community-driven, so you can find extremely niche music.
+
+```
+{"action": "search", "query": "lo-fi ambient", "maxItems": 50}
+```
+
+Use search results to discover artists, then drill into each with the `artist` action to explore their full catalogs.
+
+### Artist Discovery and A&R
+
+Labels and A&R professionals can use this to discover emerging artists. Search for trending genres, then analyze artist discographies and release patterns.
+
+```
+{"action": "artist", "url": "https://artist.bandcamp.com"}
+```
+
+Get complete discography, location (for booking/touring logistics), bio, and genre tags. Cross-reference multiple artists to find scenes and clusters.
+
+### Indie Music Pricing Analysis
+
+Study how independent musicians price their work. Bandcamp's "name your price" model creates a unique dataset:
+
+1. Search for a genre: `{"action": "search", "query": "jazz", "maxItems": 200}`
+2. Get album details for each result to see actual prices
+3. Analyze: What percentage is free? What's the median price? Do established artists charge more?
+
+### Genre and Tag Analysis
+
+Map the Bandcamp genre ecosystem. Artists self-tag their work, creating a folksonomy of music classification:
+
+1. Search across genres to collect tag data
+2. Use album details to get full tag lists
+3. Build a tag co-occurrence graph to understand genre relationships
+
+### Release Pattern Tracking
+
+Monitor new releases in specific genres or from specific artists. Combine search (for genre-level monitoring) with artist scraping (for per-artist tracking) to build a release calendar.
+
+### Music Data Enrichment
+
+Enrich your existing music database with Bandcamp data. If you have a list of artist names or album titles, use search to find their Bandcamp presence, then get full details.
+
+### Academic Research
+
+Study the independent music ecosystem: geographical distribution of artists, genre evolution over time, pricing dynamics, and the relationship between tags and commercial success.
+
+## Pricing
+
+This actor uses pay-per-event pricing:
+
+- **search-result**: Charged per search result returned
+- **album-detail**: Charged per album scraped
+- **artist-detail**: Charged per artist profile scraped
 
 ## Technical Details
 
-- Built with **Crawlee** PlaywrightCrawler for managed browser automation with automatic retries
-- Uses **Playwright** with Chromium in headless mode
-- Extracts data from Bandcamp's embedded `TralbumData` JavaScript object for maximum reliability
-- Falls back to DOM scraping when structured data is unavailable
-- Sequential processing (maxConcurrency: 1) to respect Bandcamp's rate limits
-- Configurable proxy support via Apify Proxy for geo-restricted content
+- Uses `httpx` for async HTTP requests with connection pooling
+- Parses JSON-LD structured data from album pages for maximum accuracy
+- Falls back to HTML parsing via BeautifulSoup4 when structured data is unavailable
+- Extracts `data-tralbum` and `data-band` embedded JSON from Bandcamp pages
+- No authentication required — all data is from public pages
+- Respects Bandcamp's server with sequential requests
+- Handles pagination for search results automatically
+
+## Limitations
+
+- Only accesses publicly available information on Bandcamp
+- Search results are limited to what Bandcamp's search returns (no API access)
+- Rate limiting may apply for very large scrapes — use reasonable `maxItems` values
+- Prices shown are the minimum/listed price; "name your price" items show 0.00
 
 ## FAQ
 
-**Q: Does this work with custom domain Bandcamp sites?**
-A: Yes. The scraper accepts any valid URL that hosts a Bandcamp artist or label page, including custom domains.
+**Q: Does this require a Bandcamp account?**
+A: No. All data is scraped from public HTML pages.
 
-**Q: Why does enabling track listings increase run time?**
-A: When track listings are enabled, the Actor must visit each individual album page to extract track data from the embedded JavaScript. Without tracks, it can extract basic album info directly from the music grid page in a single request.
+**Q: How fast is it?**
+A: Search returns around 20 results per page load. Album and artist details take one request each. Typical runs complete in seconds.
 
-**Q: What happens if an album page fails to load?**
-A: The Actor retries each request up to 3 times automatically. If all retries fail, it records an error entry in the dataset and continues processing the remaining albums.
+**Q: Can I search by genre/tag?**
+A: Yes — just use genre names as your search query. Bandcamp's search covers titles, artist names, tags, and descriptions.
 
-**Q: Can I scrape multiple artists in one run?**
-A: Currently, each run processes one artist or label URL. To scrape multiple artists, run the Actor multiple times or use Apify's scheduling and orchestration features.
+**Q: What about "name your price" albums?**
+A: These show as price 0.0 with a minPrice of 0.0 in the album details.
 
-**Q: What format are audio preview URLs?**
-A: Preview URLs point to MP3 files encoded at 128kbps, served from Bandcamp's CDN (`t4.bcbits.com`). These are the same previews that play on the Bandcamp website.
+**Q: Can I get streaming URLs?**
+A: The scraper focuses on metadata (titles, prices, tags). Streaming URLs are temporary and expire quickly.
 
-**Q: Is there a limit on the number of albums?**
-A: You can set the maxAlbums parameter (default: 50, max: 500) to control how many albums are processed. Set it to 0 for unlimited.
+## Getting Started
+
+Install dependencies and run locally:
+
+```
+cd bandcamp-scraper
+pip install -r requirements.txt
+apify run --input '{"action": "search", "query": "jazz", "maxItems": 5}'
+```
+
+Or deploy to Apify:
+
+```
+apify login
+apify push
+```
+
+## License
+
+This project is licensed under the Apache License 2.0.
+
+## Using proxies
+
+Bandcamp uses Cloudflare protection that detects and blocks automated traffic patterns from datacenter IPs, returning 403 or challenge pages during bulk scraping. Residential proxies route requests through real ISP addresses that pass Cloudflare's trust checks. [ThorData](https://thordata.partnerstack.com/partner/0a0x4nzh) provides 200M+ residential IPs for reliable Bandcamp data collection at scale.
